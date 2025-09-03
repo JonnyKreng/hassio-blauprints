@@ -1,8 +1,10 @@
 blueprint:
   name: Update Sonoff TRV Valve 
   description: >
-    Adjusts the valve closing/opening degrees based on the PID controller,
-    building efficiency, indoor and outdoor meter readings.
+    Adjusts the valve closing/opening degrees based on a PID controller output,
+    the buildings efficiency and indoor and outdoor temepature readings. Using 
+    sonoff trvs and https://github.com/bvweerd/simple_pid_controller together 
+    with his automation should result in a really efficent heating solution.
   domain: automation
   input:
     thermostat_sensor:
@@ -13,19 +15,22 @@ blueprint:
           domain: sensor
     indoor_meter:
       name: Indoor meter
-      description: Indoor temperature / energy meter
+      description: Indoor temperature
       selector:
         entity:
           domain: sensor
     outdoor_meter:
       name: Outdoor meter
-      description: Outdoor temperature / energy meter
+      description: Outdoor temperature
       selector:
         entity:
           domain: sensor
     building_efficiency:
       name: Building efficiency factor
-      description: Input number that represents the building’s efficiency
+      description: > 
+        Input number that represents the building’s efficiency. Good 
+        insulated building have a value around 0.6. Use a heigher number
+        for bad insulation.
       selector:
         entity:
           domain: input_number
