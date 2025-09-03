@@ -1,0 +1,77 @@
+blueprint:
+  name: Update Sonoff TRV Valve 
+  description: >
+    Adjusts the valve closing/opening degrees based on the PID controller,
+    building efficiency, indoor and outdoor meter readings.
+  domain: automation
+  input:
+    thermostat_sensor:
+      name: Thermostat PID output
+      description: Sensor that provides the PID controller output
+      selector:
+        entity:
+          domain: sensor
+    indoor_meter:
+      name: Indoor meter
+      description: Indoor temperature / energy meter
+      selector:
+        entity:
+          domain: sensor
+    outdoor_meter:
+      name: Outdoor meter
+      description: Outdoor temperature / energy meter
+      selector:
+        entity:
+          domain: sensor
+    building_efficiency:
+      name: Building efficiency factor
+      description: Input number that represents the building’s efficiency
+      selector:
+        entity:
+          domain: input_number
+    valve_closing:
+      name: Valve closing degree number
+      description: Number entity that controls the valve closing degree
+      selector:
+        entity:
+          domain: number
+    valve_opening:
+      name: Valve opening degree number
+      description: Number entity that controls the valve opening degree
+      selector:
+        entity:
+          domain: number
+
+trigger:
+  - platform: state
+    entity_id: !input thermostat_sensor
+  - platform: state
+    entity_id: !input indoor_meter
+  - platform: state
+    entity_id: !input outdoor_meter
+
+variables:
+  valve_value: >-
+    {{
+      (states(input('thermostat_sensor')) | float) +
+      (states(input('building_efficiency')) | float) *
+      ((states(input('indoor_meter')) | float) -
+       (states(input('outdoor_meter')) | float) | abs)
+    }}
+
+action:
+  - service: number.set_value
+    target:
+      entity_id: !input valve_closing
+    data:
+      value: "{{ 100.0 - valve_value | float }}"
+
+  - service: number.set_value
+    target:
+      entity_id: !input valve_opening
+    data:
+      value: >-
+        {% set v = valve_value | float + 5 %}
+        {{ 100 if v > 100 else v }}
+
+mode: single
