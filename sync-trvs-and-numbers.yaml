@@ -1,0 +1,59 @@
+blueprint:
+  name: Sync TRV setpoints
+  description: Sync the temperature setpoints of two TRVs. If one of them is changed,
+    the other one gets updated automatically to the new value. Can also be used to
+    sync the setpoint of a versatile thermostat valve opening entity to its physical
+    counterpart.
+  domain: automation
+  input:
+    trvs:
+      name: TRVs + climate
+      description: TRVs and climate objects to sync the setpoint temperature for
+      selector:
+        entity:
+          filter:
+            domain: climate
+          multiple: true
+
+    numeric_entities:
+      name: Numeric entities
+      description: Input numbers or generic number entities that should receive the same temperature value.
+      selector:
+        entity:
+          multiple: true
+          filter:
+            domain: [input_number, number]
+
+variables:
+  trvs: !input trvs
+  nums: !input numeric_entities
+
+trigger:
+- platform: state
+  entity_id: !input trvs
+  attribute: temperature
+
+condition:
+- condition: template
+  value_template: >
+    {% set temps = states | selectattr('entity_id', 'in', trvs) | map(attribute='attributes.temperature') | map('float') | list %}
+    {{ temps | max != temps | min }}
+
+action:
+- service: climate.set_temperature
+  data:
+    temperature: '{{ trigger.to_state.attributes.temperature | float }}'
+  target:
+    entity_id: >
+      {{ trvs | reject('eq', trigger.entity_id) | list }}
+
+- repeat:
+      count: "{{ nums | length }}"
+      sequence:
+        - variables:
+            cur_entity: "{{ nums[repeat.index - 1] }}"
+        - service: input_number.set_value
+          data:
+            value: "{{ trigger.to_state.attributes.temperature | float }}"
+          target:
+            entity_id: "{{ cur_entity }}"
