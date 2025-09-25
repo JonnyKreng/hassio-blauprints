@@ -73,15 +73,15 @@ action:
     target:
       entity_id: !input valve_closing
     data:
-      value: "{{ 100.0 - states(valve_value) | float }}"
+      value: "{{ 100.0 - (valve_value | float) }}"
 
   - service: number.set_value
     target:
       entity_id: !input valve_opening
     data:
       value: >-
-         {% if (states(valve_value) | float + 5) < 100 %}
-             {{states(valve_value) | float + 5}} 
+         {% if (valve_value | float + 5) < 100 %}
+             {{valve_value | float + 5}} 
          {% else %}
              100
          {% endif %}
