@@ -56,12 +56,16 @@ trigger:
     entity_id: !input outdoor_meter
 
 variables:
+  thermostat_sensor: !input 'thermostat_sensor'
+  building_efficiency: !input 'building_efficiency'
+  indoor_meter: !input 'indoor_meter'
+  outdoor_meter: !input 'outdoor_meter'
   valve_value: >-
     {{
-      (states(input('thermostat_sensor')) | float) +
-      (states(input('building_efficiency')) | float) *
-      ((states(input('indoor_meter')) | float) -
-       (states(input('outdoor_meter')) | float) | abs)
+      (states(thermostat_sensor) | float) +
+      (states(building_efficiency) | float) *
+      ((states(indoor_meter) | float) -
+       (states(outdoor_meter) | float) | abs)
     }}
 
 action:
