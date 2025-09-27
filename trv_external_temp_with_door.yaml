@@ -30,7 +30,6 @@ variables:
   trv_entity: !input trv_entity
   temperature_sensor: !input temperature_sensor
   door_sensor: !input door_sensor
-  update_interval: !input update_interval
 
 trigger:
   - platform: state
