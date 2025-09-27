@@ -8,7 +8,6 @@ blueprint:
       selector:
         entity:
           domain: climate
-          integration: sonoff
       description: The TRV to control
     temperature_sensor:
       name: External Temperature Sensor
@@ -22,7 +21,6 @@ blueprint:
       selector:
         entity:
           domain: binary_sensor
-          device_class: door
       description: Optional door sensor to disable TRV when door is open
       default: 
 
