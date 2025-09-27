@@ -1,0 +1,36 @@
+blueprint:
+  name: TRV External Temperature Control
+  description: Updates a TRV's external temperature setpoint based on an external temperature sensor
+  domain: automation
+  input:
+    trv_entity:
+      name: TRV Entity
+      selector:
+        entity:
+          domain: climate
+      description: The TRV to control
+    temperature_sensor:
+      name: External Temperature Sensor
+      selector:
+        entity:
+          domain: sensor
+          device_class: temperature
+      description: External temperature sensor to use for the TRV's
+
+variables:
+  trv_entity: !input trv_entity
+  temperature_sensor: !input temperature_sensor
+
+trigger:
+  - platform: state
+    entity_id: !input temperature_sensor
+
+action:
+  - service: number.set_value
+    target:
+      entity_id: >
+        {{ trv_entity | replace('climate.', 'number.') |  replace('_thermostat', '') }}_external_temperature_sensor_value
+    data:
+      value: "{{ states(temperature_sensor) | float }}"
+
+mode: single
