@@ -25,15 +25,6 @@ blueprint:
           device_class: door
       description: Optional door sensor to disable TRV when door is open
       default: 
-    update_interval:
-      name: Update Interval
-      description: How often to update the external temperature (in minutes)
-      selector:
-        number:
-          min: 1
-          max: 60
-          unit_of_measurement: minutes
-      default: 5
 
 variables:
   trv_entity: !input trv_entity
