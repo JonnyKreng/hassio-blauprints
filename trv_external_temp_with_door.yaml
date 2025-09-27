@@ -36,21 +36,25 @@ trigger:
     entity_id: !input door_sensor
     enabled: "{{ door_sensor != None }}"
 
-condition:
-  - condition: template
-    value_template: >
-      {% if door_sensor != None %}
-        {{ states(door_sensor) == 'off' }}
-      {% else %}
-        {{ true }}
-      {% endif %}
-
 action:
-  - service: number.set_value
-    target:
-      entity_id: >
-        {{ trv_entity | replace('climate.', 'number.') }}_external_temperature_sensor_value
-    data:
-      value: "{{ states(temperature_sensor) | float }}"
+  - choose:
+      - conditions:
+          - condition: template
+            value_template: "{{ door_sensor != None and states(door_sensor) == 'on' }}"
+        sequence:
+          - service: climate.turn_off
+            target:
+              entity_id: "{{ trv_entity }}"
+              
+      - conditions:
+          - condition: template
+            value_template: "{{ door_sensor == None or states(door_sensor) == 'off' }}"
+        sequence:
+          - service: number.set_value
+            target:
+              entity_id: >
+                {{ trv_entity | replace('climate.', 'number.') |  replace('_thermostat', '') }}_external_temperature_sensor_value
+            data:
+              value: "{{ states(temperature_sensor) | float }}"
 
 mode: single
