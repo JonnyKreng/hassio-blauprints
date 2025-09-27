@@ -1,0 +1,60 @@
+blueprint:
+  name: TRV External Temperature Control with Door Sensor
+  description: Updates a TRV's external temperature setpoint based on an external temperature sensor, with optional door sensor integration
+  domain: automation
+  input:
+    trv_entity:
+      name: TRV Entity
+      selector:
+        entity:
+          domain: climate
+          integration: sonoff
+      description: The TRV to control
+    temperature_sensor:
+      name: External Temperature Sensor
+      selector:
+        entity:
+          domain: sensor
+          device_class: temperature
+      description: External temperature sensor to use for the TRV
+    door_sensor:
+      name: Door Sensor
+      selector:
+        entity:
+          domain: binary_sensor
+          device_class: door
+      description: Optional door sensor to disable TRV when door is open
+      default:
+      required: false
+
+variables:
+  trv_entity: !input trv_entity
+  temperature_sensor: !input temperature_sensor
+  door_sensor: !input door_sensor
+  update_interval: !input update_interval
+
+trigger:
+  - platform: state
+    entity_id: !input temperature_sensor
+  - platform: state
+    entity_id: !input door_sensor
+    enabled: "{{ door_sensor != None }}"
+
+condition:
+  - condition: template
+    value_template: >
+      {% if door_sensor != None %}
+        {{ states(door_sensor) == 'off' }}
+      {% else %}
+        {{ true }}
+      {% endif %}
+
+action:
+  - service: number.set_value
+    target:
+      entity_id: >
+        {{ trv_entity | replace('climate.', 'number.') }}_external_temperature_sensor_value
+    data:
+      value: "{{ states(temperature_sensor) | float }}"
+
+mode: single
