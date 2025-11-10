@@ -1,0 +1,73 @@
+blueprint:
+  name: Room Heating Control
+  description: >
+    Controls the heating in a room based on a schedule,
+    occupancy, and door/window sensor state.
+  domain: automation
+  input:
+    heating_schedule:
+      name: Heating Schedule
+      description: The heating schedule for the room.
+      selector:
+        entity:
+          domain: schedule
+    door_window_sensor:
+      name: Door/Window Sensor
+      description: The door or window sensor for the room.
+      selector:
+        entity:
+          domain: binary_sensor
+    home_zone:
+      name: Home Zone
+      description: The zone representing the home (for occupancy detection).
+      selector:
+        entity:
+          domain: zone
+    area_id:
+      name: Area ID
+      description: The area ID of the room (e.g., "living_room", "bedroom").
+      selector:
+        text:
+
+mode: single
+
+trigger:
+  - platform: state
+    entity_id: !input heating_schedule
+    to: null
+  - platform: state
+    entity_id: !input door_window_sensor
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 20
+  - platform: state
+    entity_id: !input home_zone
+    attribute: persons
+
+action:
+  - if:
+      - condition: state
+        entity_id: !input heating_schedule
+        state: "on"
+      - condition: template
+        value_template: "{{ state_attr(input.home_zone, 'persons') | count | int > 0 }}"
+      - condition: or
+        conditions:
+          - condition: state
+            entity_id: !input door_window_sensor
+            state: "off"
+          - condition: state
+            entity_id: !input door_window_sensor
+            state: "unavailable"
+          - condition: state
+            entity_id: !input door_window_sensor
+            state: "unknown"
+    then:
+      - service: climate.turn_on
+        target:
+          area_id: !input area_id
+    else:
+      - service: climate.turn_off
+        target:
+          area_id: !input area_id
