@@ -56,12 +56,16 @@ trigger:
     entity_id: !input outdoor_meter
 
 variables:
+  thermostat_sensor: !input 'thermostat_sensor'
+  building_efficiency: !input 'building_efficiency'
+  indoor_meter: !input 'indoor_meter'
+  outdoor_meter: !input 'outdoor_meter'
   valve_value: >-
     {{
-      (states(input('thermostat_sensor')) | float) +
-      (states(input('building_efficiency')) | float) *
-      ((states(input('indoor_meter')) | float) -
-       (states(input('outdoor_meter')) | float) | abs)
+      (states(thermostat_sensor) | float) +
+      (states(building_efficiency) | float) *
+      ((states(indoor_meter) | float) -
+       (states(outdoor_meter) | float) | abs)
     }}
 
 action:
@@ -69,14 +73,17 @@ action:
     target:
       entity_id: !input valve_closing
     data:
-      value: "{{ 100.0 - valve_value | float }}"
+      value: "{{ 100.0 - (valve_value | float) }}"
 
   - service: number.set_value
     target:
       entity_id: !input valve_opening
     data:
       value: >-
-        {% set v = valve_value | float + 5 %}
-        {{ 100 if v > 100 else v }}
+         {% if (valve_value | float + 5) < 100 %}
+             {{valve_value | float + 5}} 
+         {% else %}
+             100
+         {% endif %}
 
 mode: single
