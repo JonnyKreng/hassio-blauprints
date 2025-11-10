@@ -26,10 +26,6 @@ mode: single
 trigger:
   - platform: state
     entity_id: !input heating_schedule
-    to: "on"
-  - platform: state
-    entity_id: !input heating_schedule
-    to: "off"
   - platform: state
     entity_id: !input door_window_sensor
     for:
