@@ -27,7 +27,7 @@ blueprint:
       name: Area ID
       description: The area ID of the room (e.g., "living_room", "bedroom").
       selector:
-        text:
+        area: {}
 
 mode: single
 
