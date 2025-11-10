@@ -51,7 +51,7 @@ action:
         entity_id: !input heating_schedule
         state: "on"
       - condition: template
-        value_template: "{{ state_attr(input.home_zone, 'persons') | count | int > 0 }}"
+        value_template: "{{ state_attr(states[!input home_zone], 'persons') | count | int > 0 }}"
       - condition: or
         conditions:
           - condition: state
