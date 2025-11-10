@@ -1,8 +1,7 @@
 blueprint:
   name: Room Heating Control
   description: >
-    Controls the heating in a room based on a schedule,
-    occupancy, and door/window sensor state.
+    Controls the heating in a room based on a schedule, occupancy, and door/window sensor state.
   domain: automation
   input:
     heating_schedule:
@@ -30,11 +29,13 @@ blueprint:
         area: {}
 
 mode: single
-
 trigger:
   - platform: state
     entity_id: !input heating_schedule
-    to: null
+    to: "on"
+  - platform: state
+    entity_id: !input heating_schedule
+    to: "off"
   - platform: state
     entity_id: !input door_window_sensor
     for:
@@ -51,7 +52,8 @@ action:
         entity_id: !input heating_schedule
         state: "on"
       - condition: template
-        value_template: "{{ state_attr(states[!input home_zone], 'persons') | count | int > 0 }}"
+        value_template: >
+          {{ state_attr(states.home_zone, 'persons') | count | int > 0 }}
       - condition: or
         conditions:
           - condition: state
