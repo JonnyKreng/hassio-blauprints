@@ -32,8 +32,9 @@ trigger:
       hours: 0
       minutes: 0
       seconds: 20
-  - platform: state
-    entity_id: states.person
+  - trigger: state
+    entity_id:
+      - zone.home
 
 action:
   - if:
